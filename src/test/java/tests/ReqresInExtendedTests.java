@@ -1,11 +1,13 @@
 package tests;
 
+import io.qameta.allure.restassured.AllureRestAssured;
 import models.lombok.LoginBodyLombokModel;
 import models.lombok.LoginResponseLombokModel;
 import models.pojo.LoginBodyPojoModel;
 import models.pojo.LoginResponsePojoModel;
 import org.junit.jupiter.api.Test;
 
+import static helpers.CustomApiListener.withCustomTemplates;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 
@@ -20,6 +22,8 @@ public class ReqresInExtendedTests {
 
         given()
                 .log().uri()
+                .log().headers()
+                .log().body()
                 .contentType(JSON)
                 .body(data)
                 .when()
@@ -39,6 +43,8 @@ public class ReqresInExtendedTests {
 
         LoginResponsePojoModel response = given()
                 .log().uri()
+                .log().headers()
+                .log().body()
                 .contentType(JSON)
                 .body(data)
                 .when()
@@ -60,6 +66,56 @@ public class ReqresInExtendedTests {
 
         LoginResponseLombokModel response = given()
                 .log().uri()
+                .log().headers()
+                .log().body()
+                .contentType(JSON)
+                .body(data)
+                .when()
+                .post("https://reqres.in/api/login")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .extract().as(LoginResponseLombokModel.class);
+
+        assertThat(response.getToken()).isEqualTo("QpwL5tke4Pnpja7X4");
+    }
+
+    @Test
+    void loginWithAllureTest() {
+        LoginBodyLombokModel data = new LoginBodyLombokModel();
+        data.setEmail("eve.holt@reqres.in");
+        data.setPassword("citislicka");
+
+        LoginResponseLombokModel response = given()
+                .log().uri()
+                .log().headers()
+                .log().body()
+                .filter(new AllureRestAssured()) // Подключили отчет allure
+                .contentType(JSON)
+                .body(data)
+                .when()
+                .post("https://reqres.in/api/login")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(200)
+                .extract().as(LoginResponseLombokModel.class);
+
+        assertThat(response.getToken()).isEqualTo("QpwL5tke4Pnpja7X4");
+    }
+
+    @Test
+    void loginWithCustomListenerTest() {
+        LoginBodyLombokModel data = new LoginBodyLombokModel();
+        data.setEmail("eve.holt@reqres.in");
+        data.setPassword("citislicka");
+
+        LoginResponseLombokModel response = given()
+                .log().uri()
+                .log().headers()
+                .log().body()
+                .filter(withCustomTemplates()) // Подключили отчет allure
                 .contentType(JSON)
                 .body(data)
                 .when()
